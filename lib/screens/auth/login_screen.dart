@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/constants/app_colors.dart';
+import '../../core/constants/app_enums.dart';
 import '../../core/constants/app_routes.dart';
 import '../../core/utils/form_validators.dart';
 import '../../models/user_model.dart';
@@ -11,8 +12,11 @@ import '../../widgets/primary_button.dart';
 import 'widgets/auth_footer_link.dart';
 
 /// Halaman Login untuk Masyarakat (User) dan Petugas (Admin).
+/// Untuk persona [UserRole.admin], opsi pendaftaran disembunyikan sesuai PRD.
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  const LoginScreen({super.key, this.role = UserRole.user});
+
+  final UserRole role;
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -24,8 +28,12 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   late final AuthService _authService = AuthService();
 
-  String _selectedRole = UserModel.roleUser;
   bool _isLoading = false;
+
+  UserRole get _selectedRole {
+    final arg = ModalRoute.of(context)?.settings.arguments;
+    return arg is UserRole ? arg : widget.role;
+  }
 
   @override
   void dispose() {
@@ -59,7 +67,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       final actualRole = userData['role'] as String? ?? UserModel.roleUser;
       final isActualAdmin = actualRole == UserModel.roleAdmin;
-      final wantsAdmin = _selectedRole == UserModel.roleAdmin;
+      final wantsAdmin = _selectedRole == UserRole.admin;
 
       if (wantsAdmin && !isActualAdmin) {
         await _authService.logout();
@@ -104,59 +112,48 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final selectedRole = _selectedRole;
+    final isAdmin = selectedRole == UserRole.admin;
 
     return Scaffold(
+      appBar: Navigator.canPop(context)
+          ? AppBar(
+              leading: IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.arrow_back_outlined),
+                tooltip: 'Ganti peran',
+              ),
+            )
+          : null,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
             child: Form(
               key: _formKey,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const AppLogo(width: 150),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Layanan Pengaduan Masyarakat',
-                    style: textTheme.bodySmall,
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 24),
-                  SizedBox(
-                    width: double.infinity,
-                    child: SegmentedButton<String>(
-                      segments: const [
-                        ButtonSegment<String>(
-                          value: UserModel.roleUser,
-                          label: Text('Masyarakat'),
-                          icon: Icon(Icons.person_outline),
-                        ),
-                        ButtonSegment<String>(
-                          value: UserModel.roleAdmin,
-                          label: Text('Admin'),
-                          icon: Icon(Icons.admin_panel_settings_outlined),
-                        ),
-                      ],
-                      selected: {_selectedRole},
-                      onSelectionChanged: (selection) {
-                        setState(() => _selectedRole = selection.first);
-                      },
-                      style: ButtonStyle(
-                        backgroundColor: WidgetStateProperty.resolveWith(
-                          (states) => states.contains(WidgetState.selected)
-                              ? AppColors.primarySoft
-                              : AppColors.surface,
-                        ),
-                        foregroundColor: WidgetStateProperty.resolveWith(
-                          (states) => states.contains(WidgetState.selected)
-                              ? AppColors.primaryDark
-                              : AppColors.textSecondary,
-                        ),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.primarySoft,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      'Masuk sebagai ${selectedRole.label}',
+                      style: textTheme.bodySmall?.copyWith(
+                        color: AppColors.primaryDark,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 28),
                   CustomInput(
                     controller: _emailController,
                     hintText: 'Email',
@@ -179,18 +176,18 @@ class _LoginScreenState extends State<LoginScreen> {
                     onPressed: _handleLogin,
                   ),
                   const SizedBox(height: 40),
-                  if (_selectedRole == UserModel.roleUser)
+                  if (isAdmin)
+                    Text(
+                      'Akun petugas dikelola oleh administrator sistem.',
+                      style: textTheme.bodySmall,
+                      textAlign: TextAlign.center,
+                    )
+                  else
                     AuthFooterLink(
                       promptText: 'Belum punya akun? ',
                       actionText: 'Daftar di sini',
                       onTap: () =>
                           Navigator.pushNamed(context, AppRoutes.register),
-                    )
-                  else
-                    Text(
-                      'Akun Admin dibuat oleh pengelola sistem.',
-                      style: textTheme.bodySmall,
-                      textAlign: TextAlign.center,
                     ),
                 ],
               ),
