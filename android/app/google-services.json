@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "731792123326",
+    "project_id": "laporkita-d832b",
+    "storage_bucket": "laporkita-d832b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:731792123326:android:21c739e8f00adc15b2c5ef",
+        "android_client_info": {
+          "package_name": "com.example.laporkita"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCyzk-urUBduepucoPZpSHdZPbI9cZ3TdE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
