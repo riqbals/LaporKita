@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/constants/app_colors.dart';
@@ -25,6 +26,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _loadProfile() async {
+    if (Firebase.apps.isEmpty) {
+      if (mounted) setState(() => _isLoading = false);
+      return;
+    }
     setState(() => _isLoading = true);
     try {
       final profile = await _authService.getCurrentUserProfile();
@@ -74,25 +79,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       CircleAvatar(
                         radius: 34,
                         backgroundColor: AppColors.primarySoft,
-                        child: Text(
-                          (_profile?.name.isNotEmpty == true
-                                  ? _profile!.name[0]
-                                  : 'U')
-                              .toUpperCase(),
-                          style: const TextStyle(
-                            fontSize: 26,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.primaryDark,
-                          ),
-                        ),
+                        child: _profile?.name.trim().isNotEmpty == true
+                            ? Text(
+                                _profile!.name.trim()[0].toUpperCase(),
+                                style: const TextStyle(
+                                  fontSize: 26,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.primaryDark,
+                                ),
+                              )
+                            : const Icon(
+                                Icons.person_outline,
+                                size: 32,
+                                color: AppColors.primaryDark,
+                              ),
                       ),
                       const SizedBox(height: 12),
-                      Text(
-                        _profile?.name.isNotEmpty == true
-                            ? _profile!.name
-                            : 'Pengguna',
-                        style: textTheme.titleLarge,
-                      ),
+                      if (_profile?.name.trim().isNotEmpty == true)
+                        Text(
+                          _profile!.name.trim(),
+                          style: textTheme.titleLarge,
+                        ),
                       const SizedBox(height: 4),
                       Text(
                         _profile?.email ?? '-',
