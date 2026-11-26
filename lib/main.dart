@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'core/constants/app_routes.dart';
 import 'core/theme/app_theme.dart';
+import 'screens/auth/login_screen.dart';
+import 'screens/auth/register_screen.dart';
 
 void main() {
   runApp(const LaporKitaApp());
@@ -15,23 +17,11 @@ class LaporKitaApp extends StatelessWidget {
       title: 'LaporKita',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      initialRoute: AppRoutes.splash,
+      initialRoute: AppRoutes.login,
       routes: {
-        AppRoutes.splash: (_) => const _PlaceholderScreen(),
+        AppRoutes.login: (_) => const LoginScreen(),
+        AppRoutes.register: (_) => const RegisterScreen(),
       },
-    );
-  }
-}
-
-class _PlaceholderScreen extends StatelessWidget {
-  const _PlaceholderScreen();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: Text('LaporKita Design System Ready'),
-      ),
     );
   }
 }
