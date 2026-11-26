@@ -8,7 +8,7 @@
 
 * **Framework:** Flutter (Dart), target minimal Android 6.0 (API 23).
 
-* **Backend:** Firebase Authentication (Email/Password), Cloud Firestore, Firebase Storage.
+* **Backend:** Firebase Authentication (Email/Password), Cloud Firestore, Cloudinary (Penyimpanan Foto).
 
 * **Konteks Regulasi (Referensi Dokumen):** UU No. 25/2009 & Perpres No. 76/2013 tentang Pelayanan Publik.
 
@@ -23,7 +23,7 @@
 | **Complaint – Create** | Ya | Tidak | Status awal wajib `"Menunggu"`, `adminResponse: ""`. | 
 | **Complaint – Read** | Milik sendiri (`userId == uid`) | Semua dokumen | Real-time menggunakan Firestore `Stream`. | 
 | **Complaint – Update** (`status`, `adminResponse`) | **Dilarang** | Ya | Wajib isi `adminResponse` jika status `"Selesai"` / `"Ditolak"`. | 
-| **Complaint – Delete** | Milik sendiri **hanya jika `status == "Menunggu"`** | Tidak | Hapus dokumen Firestore + file foto di Storage. | 
+| **Complaint – Delete** | Milik sendiri **hanya jika `status == "Menunggu"`** | Tidak | Hapus dokumen Firestore (foto di Cloudinary disimpan via URL). | 
 
 ## 3. MVP Scope & Strict Constraints
 
@@ -79,17 +79,17 @@
 | `category` | `String` | Enum: `"Jalan & Jembatan"` | `"Lampu Jalan"` | `"Drainase"` | `"Sampah"` | `"Lainnya"` | 
 | `description` | `String` | Required | 
 | `locationAddress` | `String` | Required (teks alamat/patokan) | 
-| `imageUrl` | `String` | Required (download URL dari Firebase Storage) | 
+| `imageUrl` | `String` | Required (secure URL dari Cloudinary) | 
 | `status` | `String` | Enum: `"Menunggu"` | `"Diproses"` | `"Selesai"` | `"Ditolak"` | 
 | `adminResponse` | `String` | Default `""`, wajib diisi saat status `"Selesai"` / `"Ditolak"` | 
 | `createdAt` | `Timestamp` | Required | 
 | `updatedAt` | `Timestamp` | Required (diperbarui tiap Admin mengubah status) | 
 
-### C. Firebase Storage Convention
+### C. Cloudinary Media Storage Convention
 
-* **Path:** `complaint_images/{complaintId}.jpg`
+* **Folder & File:** `complaint_images/{complaintId}.jpg` (upload preset `laporkita_upload`)
 
-* **Aturan Media:** Kompresi di sisi klien Flutter sebelum *upload* (kualitas `70–80%`, max resolusi `1080p`).
+* **Aturan Media:** Kompresi di sisi klien Flutter sebelum *upload* (kualitas `70–80%`, max resolusi `1080p`, maks. `5 MB`).
 
 ## 5. Lifecycle & Data Flow (Acuan DFD & State Machine)
 
@@ -108,7 +108,7 @@
 
 1. **P1 – Autentikasi:** `User/Admin` → kredensial → Firebase Auth & `users` → sesi + `role`.
 
-2. **P2 – Pengajuan Aduan:** `User` → form + foto terkompresi → Storage (`imageUrl`) + Firestore (`complaints`).
+2. **P2 – Pengajuan Aduan:** `User` → form + foto terkompresi → Cloudinary (`imageUrl`) + Firestore (`complaints`).
 
 3. **P3 – Pemantauan & Pembatalan:** `User` ↔ *real-time stream* `complaints` (filter `userId`); hapus jika `Menunggu`.
 
@@ -124,7 +124,7 @@
 lib/
 ├── core/          # constants (enums, colors, routes), theme, utils (image compressor)
 ├── models/        # user_model.dart, complaint_model.dart (SHARED - lock di main)
-├── services/      # auth_service.dart, complaint_service.dart, storage_service.dart
+├── services/      # auth_service.dart, category_service.dart, complaint_service.dart
 ├── widgets/       # reusable UI (complaint_card, status_badge, custom_input)
 └── screens/
     ├── auth/      # splash, onboarding, login, register

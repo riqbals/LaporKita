@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+
 import '../../core/constants/app_routes.dart';
 import '../../core/utils/form_validators.dart';
+import '../../models/user_model.dart';
+import '../../services/auth_service.dart';
 import '../../widgets/custom_input.dart';
 import '../../widgets/primary_button.dart';
 import 'widgets/auth_footer_link.dart';
@@ -19,6 +22,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  late final AuthService _authService = AuthService();
   bool _isLoading = false;
 
   @override
@@ -34,14 +38,52 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
     setState(() => _isLoading = true);
-    // TODO: Integrasikan dengan AuthService setelah backend siap.
-    await Future<void>.delayed(const Duration(milliseconds: 500));
-    if (!mounted) return;
-    setState(() => _isLoading = false);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Validasi pendaftaran berhasil (UI mode)')),
-    );
+    try {
+      final user = await _authService.register(
+        name: _nameController.text.trim(),
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+        role: UserModel.roleUser,
+      );
+
+      if (user == null) {
+        throw Exception('Gagal mendapatkan data pengguna.');
+      }
+
+      if (!mounted) return;
+
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        AppRoutes.homeUser,
+        (route) => false,
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      String message = 'Registrasi gagal. Silakan coba lagi.';
+
+      if (e.toString().contains('email-already-in-use')) {
+        message = 'Email sudah terdaftar.';
+      } else if (e.toString().contains('weak-password')) {
+        message = 'Password terlalu lemah.';
+      } else if (e.toString().contains('invalid-email')) {
+        message = 'Format email tidak valid.';
+      } else if (e.toString().contains('permission-denied')) {
+        message = 'Akses database ditolak. Periksa Firestore Rules.';
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   void _goToLogin() {
