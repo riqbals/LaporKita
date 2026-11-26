@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 
 import '../../core/constants/app_routes.dart';
 import '../../core/utils/form_validators.dart';
+import '../../models/user_model.dart';
 import '../../services/auth_service.dart';
 import '../../widgets/custom_input.dart';
 import '../../widgets/primary_button.dart';
-import 'login_screen.dart';
 import 'widgets/auth_footer_link.dart';
 
-/// Halaman registrasi akun baru (role otomatis "masyarakat").
+/// Halaman registrasi akun baru (role otomatis "user" sesuai PRD).
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
 
@@ -34,57 +34,31 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
-  // ==========================================
-  // REGISTRASI PENGGUNA
-  // ==========================================
-
   Future<void> _handleRegister() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
     setState(() => _isLoading = true);
 
     try {
-      // Membuat akun baru.
-      // Firebase otomatis membuat pengguna dalam keadaan login.
       final user = await _authService.register(
         name: _nameController.text.trim(),
         email: _emailController.text.trim(),
         password: _passwordController.text,
-        role: 'masyarakat',
+        role: UserModel.roleUser,
       );
 
       if (user == null) {
         throw Exception('Gagal mendapatkan data pengguna.');
       }
 
-      // Mengambil profil pengguna dari Firestore.
-      final userDoc = await _authService.getUserData(user.uid);
-
-      if (!userDoc.exists || userDoc.data() == null) {
-        throw Exception('Profil pengguna tidak ditemukan.');
-      }
-
-      final userData = userDoc.data()!;
-      final String name = userData['name'] ?? 'Pengguna';
-      final String role = userData['role'] ?? 'masyarakat';
-
       if (!mounted) return;
 
-      // Langsung masuk ke halaman utama.
-      Navigator.pushAndRemoveUntil(
+      Navigator.pushNamedAndRemoveUntil(
         context,
-        MaterialPageRoute(
-          builder: (context) => LoginSuccessScreen(
-            name: name,
-            role: role,
-          ),
-        ),
+        AppRoutes.homeUser,
         (route) => false,
       );
-    } catch (e, stackTrace) {
-      debugPrint('REGISTRASI ERROR: $e');
-      debugPrint('STACK TRACE: $stackTrace');
-
+    } catch (e) {
       if (!mounted) return;
 
       String message = 'Registrasi gagal. Silakan coba lagi.';

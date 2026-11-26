@@ -104,7 +104,7 @@ flowchart TB
 
     D1[(D1 Users)]
     D2[(D2 Complaints)]
-    D3[(D3 Firebase Storage)]
+    D3[(D3 Cloudinary)]
     FA[(Firebase Authentication)]
 
     U -->|Email, password, registrasi| P1
@@ -144,7 +144,7 @@ flowchart TB
 |---|---|---|
 | D1 | Users | Data akun pengguna dan admin |
 | D2 | Complaints | Data pengaduan |
-| D3 | Firebase Storage | Penyimpanan foto pengaduan |
+| D3 | Cloudinary | Penyimpanan foto pengaduan |
 | FA | Firebase Authentication | Autentikasi akun |
 
 ## 4. Relasi dan Aturan Data

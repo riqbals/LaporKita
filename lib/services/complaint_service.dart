@@ -231,8 +231,9 @@ class ComplaintService {
         );
       }
 
-      // Memastikan hanya masyarakat yang dapat mengadu.
-      if (userData['role'] != 'masyarakat') {
+      // Memastikan hanya masyarakat/user yang dapat mengadu.
+      final role = userData['role'];
+      if (role != 'user' && role != 'masyarakat') {
         throw Exception(
           'Hanya masyarakat yang dapat membuat pengaduan.',
         );
