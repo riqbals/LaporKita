@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 460" width="400" height="460">
+  
+  <path d="M 200 345 C 122 318 60 250 60 165 C 60 88 122 25 200 25 C 278 25 340 88 340 165 C 340 250 278 318 200 345 Z" fill="#4285F4" />
+
+  
+  <circle cx="250" cy="164" r="46" fill="#FFFFFF" />
+
+  
+  <g id="house">
+    
+    <path d="M 235 129 L 265 129 L 272 147 L 228 147 Z" fill="#4285F4" />
+    
+    <path d="M 228 147 L 272 147 L 290 163 L 210 163 Z" fill="#4285F4" />
+    
+    <rect x="223" y="166" width="54" height="31" rx="2" fill="#4285F4" />
+    
+    <rect x="232" y="176" width="12" height="21" rx="1" fill="#FFFFFF" />
+    <rect x="252" y="174" width="14" height="12" rx="1" fill="#FFFFFF" />
+  </g>
+
+  
+  <g id="speech-bubble">
+    <circle cx="152" cy="128" r="54" fill="#FFFFFF" />
+    <path d="M 118 164 L 100 188 L 138 175 Z" fill="#FFFFFF" />
+
+    
+    <g transform="translate(113, 110) rotate(-14)">
+      <path d="M 0 13 L 15 13 L 43 0 L 43 36 L 15 23 L 0 23 Z" fill="#4285F4" />
+      <rect x="46" y="-2" width="5" height="40" rx="2.5" fill="#4285F4" />
+      <path d="M 9 23 L 15 39 C 16 42 21 41 21 38 L 18 23 Z" fill="#4285F4" />
+    </g>
+
+    
+    <rect x="178" y="102" width="8" height="29" rx="4" fill="#EA4335" />
+    <circle cx="182" cy="142" r="4.5" fill="#EA4335" />
+  </g>
+
+  
+  <g id="community">
+    
+    <circle cx="165" cy="205" r="13" fill="#F59E0B" />
+    <path d="M 145 245 C 145 227 154 220 165 220 C 176 220 185 227 185 245 Z" fill="#34A853" />
+
+    
+    <circle cx="235" cy="205" r="13" fill="#F59E0B" />
+    <path d="M 215 245 C 215 227 224 220 235 220 C 246 220 255 227 255 245 Z" fill="#34A853" />
+
+    
+    <circle cx="200" cy="197" r="16" fill="#F59E0B" stroke="#4285F4" stroke-width="2.5" />
+    <path d="M 176 247 C 176 225 186 216 200 216 C 214 216 224 225 224 247 Z" fill="#FB923C" stroke="#4285F4" stroke-width="2.5" />
+  </g>
+
+  
+  <g id="hands" fill="#FFFFFF" stroke="#4285F4" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    
+    <path d="M 102 224 C 106 266 142 292 186 306 L 204 288 C 172 276 140 258 122 232 C 118 226 108 220 102 224 Z" stroke="none" />
+    
+    <path d="M 298 224 C 294 266 258 292 214 306 L 196 288 C 228 276 260 258 278 232 C 282 226 292 220 298 224 Z" stroke="none" />
+
+    
+    <path d="M 164 275 C 176 264 192 260 206 266 L 228 282 C 233 286 230 294 224 294 L 202 308 C 194 313 184 310 176 304 L 160 290 Z" fill="#FFFFFF" stroke="#4285F4" stroke-width="3.5" />
+    
+    <path d="M 226 266 C 216 260 202 262 192 270 L 182 278 C 178 281 182 287 187 285 L 200 277" fill="#FFFFFF" stroke="#4285F4" stroke-width="3.5" />
+    
+    <line x1="205" y1="286" x2="219" y2="296" stroke="#4285F4" stroke-width="3" />
+    <line x1="196" y1="292" x2="210" y2="302" stroke="#4285F4" stroke-width="3" />
+    <line x1="187" y1="298" x2="200" y2="307" stroke="#4285F4" stroke-width="3" />
+  </g>
+
+  
+  <text x="200" y="418" text-anchor="middle" font-family="&#39;Segoe UI&#39;, &#39;Roboto&#39;, &#39;Helvetica Neue&#39;, Arial, sans-serif" font-size="64" font-weight="800" letter-spacing="-1" fill="#4285F4">LaporKita</text>
+</svg>
