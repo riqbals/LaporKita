@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:laporkita/core/theme/app_theme.dart';
 import 'package:laporkita/main.dart';
 import 'package:laporkita/models/complaint_model.dart';
+import 'package:laporkita/screens/admin/dashboard_admin_screen.dart';
+import 'package:laporkita/screens/admin/detail_admin_screen.dart';
 import 'package:laporkita/screens/user/complaint/complaint_history_screen.dart';
 import 'package:laporkita/screens/user/complaint/create_complaint_screen.dart';
 import 'package:laporkita/screens/user/home_user_screen.dart';
@@ -170,6 +172,98 @@ void main() {
       // Tunggu 5 detik -> tombol aktif dengan teks 'Ya, Batalkan'
       await tester.pump(const Duration(seconds: 5));
       expect(find.text('Ya, Batalkan'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'DashboardAdminScreen renders 3 summary cards, 5 status filters, and complaint list',
+    (WidgetTester tester) async {
+      final dummyComplaints = [
+        ComplaintModel(
+          complaintId: 'a1',
+          userId: 'u1',
+          userName: 'Budi Santoso',
+          title: 'Jalan berlubang di Jl. Merdeka',
+          categoryId: 'infrastruktur',
+          categoryName: 'Infrastruktur & Fasilitas Umum',
+          description: 'Berlubang',
+          locationAddress: 'Jl. Merdeka',
+          status: ComplaintModel.statusMenunggu,
+        ),
+        ComplaintModel(
+          complaintId: 'a2',
+          userId: 'u2',
+          userName: 'Siti Rahma',
+          title: 'Lampu jalan mati',
+          categoryId: 'penerangan_jalan',
+          categoryName: 'Penerangan Jalan',
+          description: 'Gelap',
+          locationAddress: 'Gang Mawar',
+          status: ComplaintModel.statusDitolak,
+          adminResponse: 'Lokasi di luar wilayah',
+        ),
+      ];
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.lightTheme,
+          home: DashboardAdminScreen(initialComplaints: dummyComplaints),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Dashboard Petugas'), findsOneWidget);
+      expect(find.text('Daftar Pengaduan (2)'), findsOneWidget);
+      expect(find.text('Semua'), findsOneWidget);
+      expect(find.text('Ditolak'), findsWidgets);
+
+      // Filter Ditolak -> hanya 1 pengaduan
+      await tester.tap(find.widgetWithText(ChoiceChip, 'Ditolak'));
+      await tester.pumpAndSettle();
+      expect(find.text('Daftar Pengaduan (1)'), findsOneWidget);
+      expect(find.text('Lampu jalan mati'), findsOneWidget);
+      expect(find.text('Jalan berlubang di Jl. Merdeka'), findsNothing);
+
+      // Tap kartu untuk membuka DetailAdminScreen (Kelola Aduan)
+      await tester.tap(find.text('Lampu jalan mati'));
+      await tester.pumpAndSettle();
+      expect(find.text('Kelola Aduan'), findsOneWidget);
+      expect(find.text('Status Final (Ditolak)'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'DetailAdminScreen renders Kelola Aduan form for Menunggu complaint',
+    (WidgetTester tester) async {
+      final complaint = ComplaintModel(
+        complaintId: 'a1',
+        userId: 'u1',
+        userName: 'Budi Santoso',
+        title: 'Jalan berlubang di Jl. Merdeka',
+        categoryId: 'infrastruktur',
+        categoryName: 'Infrastruktur & Fasilitas Umum',
+        description: 'Lubang besar membahayakan pengendara.',
+        locationAddress: 'Jl. Merdeka No. 12, Bandung',
+        status: ComplaintModel.statusMenunggu,
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.lightTheme,
+          home: DetailAdminScreen(complaint: complaint),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Kelola Aduan'), findsOneWidget);
+      expect(find.text('Foto Aduan'), findsOneWidget);
+      expect(find.text('Pelapor: Budi Santoso'), findsOneWidget);
+      expect(find.text('Jl. Merdeka No. 12, Bandung'), findsOneWidget);
+      expect(find.text('Tindak Lanjut Petugas'), findsOneWidget);
+      expect(find.text('Diproses'), findsOneWidget);
+      await tester.drag(find.byType(ListView), const Offset(0, -300));
+      await tester.pumpAndSettle();
+      expect(find.text('Simpan Perubahan'), findsOneWidget);
     },
   );
 }

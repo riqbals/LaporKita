@@ -96,7 +96,8 @@ class _ComplaintHistoryScreenState extends State<ComplaintHistoryScreen> {
   }
 
   void _showComplaintDetail(ComplaintModel complaint) {
-    final canCancel = complaint.status == ComplaintModel.statusMenunggu &&
+    final canCancel =
+        complaint.status == ComplaintModel.statusMenunggu &&
         (complaint.complaintId?.isNotEmpty ?? false);
 
     showDialog<void>(
@@ -173,10 +174,7 @@ class _ComplaintHistoryScreenState extends State<ComplaintHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Riwayat Laporan'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text('Riwayat Laporan'), centerTitle: true),
       body: Column(
         children: [
           SizedBox(
@@ -185,7 +183,7 @@ class _ComplaintHistoryScreenState extends State<ComplaintHistoryScreen> {
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               itemCount: _statusFilters.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 8),
+              separatorBuilder: (_, _) => const SizedBox(width: 8),
               itemBuilder: (context, index) {
                 final status = _statusFilters[index];
                 final isSelected = _selectedStatus == status;
@@ -229,8 +227,8 @@ class _ComplaintHistoryScreenState extends State<ComplaintHistoryScreen> {
                 final complaints = _selectedStatus == 'Semua'
                     ? allComplaints
                     : allComplaints
-                        .where((c) => c.status == _selectedStatus)
-                        .toList();
+                          .where((c) => c.status == _selectedStatus)
+                          .toList();
 
                 if (complaints.isEmpty) {
                   return Center(
@@ -287,15 +285,12 @@ class _ComplaintHistoryScreenState extends State<ComplaintHistoryScreen> {
                                       ? Image.network(
                                           complaint.imageUrl,
                                           fit: BoxFit.cover,
-                                          errorBuilder: (
-                                            context,
-                                            error,
-                                            stackTrace,
-                                          ) =>
-                                              const Icon(
-                                            Icons.broken_image,
-                                            size: 35,
-                                          ),
+                                          errorBuilder:
+                                              (context, error, stackTrace) =>
+                                                  const Icon(
+                                                    Icons.broken_image,
+                                                    size: 35,
+                                                  ),
                                         )
                                       : const Icon(
                                           Icons.image_not_supported,
