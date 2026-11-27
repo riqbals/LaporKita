@@ -57,8 +57,7 @@ class _CreateComplaintScreenState extends State<CreateComplaintScreen> {
     _didApplyRouteArg = true;
 
     final arg = ModalRoute.of(context)?.settings.arguments;
-    final preselectedTitle =
-        arg is String ? arg : widget.initialCategoryTitle;
+    final preselectedTitle = arg is String ? arg : widget.initialCategoryTitle;
     if (preselectedTitle != null && preselectedTitle.isNotEmpty) {
       _applyCategorySelectionByName(preselectedTitle);
     }
@@ -81,10 +80,12 @@ class _CreateComplaintScreenState extends State<CreateComplaintScreen> {
       if (!mounted || remote.isEmpty) return;
 
       final mapped = remote
-          .map((cat) => {
-                'id': cat['id']?.toString() ?? '',
-                'name': cat['name']?.toString() ?? '',
-              })
+          .map(
+            (cat) => {
+              'id': cat['id']?.toString() ?? '',
+              'name': cat['name']?.toString() ?? '',
+            },
+          )
           .where((cat) => cat['id']!.isNotEmpty && cat['name']!.isNotEmpty)
           .toList();
 
@@ -196,10 +197,7 @@ class _CreateComplaintScreenState extends State<CreateComplaintScreen> {
 
   void _showMessage(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        behavior: SnackBarBehavior.floating,
-      ),
+      SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
     );
   }
 
@@ -217,10 +215,7 @@ class _CreateComplaintScreenState extends State<CreateComplaintScreen> {
     final photoCount = _selectedImages.length;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Buat Pengaduan'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text('Buat Pengaduan'), centerTitle: true),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Form(
@@ -228,7 +223,7 @@ class _CreateComplaintScreenState extends State<CreateComplaintScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Sampaikan Pengaduan', style: textTheme.titleLarge),
+              Text('Laporkan Pengaduan', style: textTheme.titleLarge),
               const SizedBox(height: 6),
               Text(
                 'Lengkapi informasi berikut agar pengaduan dapat diproses.',
@@ -326,8 +321,9 @@ class _CreateComplaintScreenState extends State<CreateComplaintScreen> {
               ),
               const SizedBox(height: 12),
               OutlinedButton.icon(
-                onPressed:
-                    _isLoading || photoCount >= _maxPhotos ? null : _pickImages,
+                onPressed: _isLoading || photoCount >= _maxPhotos
+                    ? null
+                    : _pickImages,
                 icon: const Icon(Icons.add_a_photo_outlined),
                 label: Text(
                   photoCount >= _maxPhotos
@@ -356,7 +352,9 @@ class _CreateComplaintScreenState extends State<CreateComplaintScreen> {
                           right: 2,
                           top: 2,
                           child: InkWell(
-                            onTap: _isLoading ? null : () => _removeImage(index),
+                            onTap: _isLoading
+                                ? null
+                                : () => _removeImage(index),
                             child: Container(
                               decoration: const BoxDecoration(
                                 color: Colors.white,
