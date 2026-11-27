@@ -32,7 +32,7 @@ class _CreateComplaintScreenState
 
   final ImagePicker _imagePicker = ImagePicker();
 
-  Uint8List? _selectedImageBytes;
+  final List<Uint8List> _selectedImages = [];
 
   List<Map<String, dynamic>> _categories = [];
 
@@ -75,27 +75,44 @@ class _CreateComplaintScreenState
   }
 
   // =====================================================
-  // MEMILIH FOTO DARI GALERI
+  // MEMILIH FOTO DARI GALERI (MAKSIMAL 5 FOTO)
   // =====================================================
 
-  Future<void> _pickImage() async {
+  Future<void> _pickImages() async {
     try {
-      final image = await _imagePicker.pickImage(
-        source: ImageSource.gallery,
+      final remaining = ComplaintService.maxImages - _selectedImages.length;
+      if (remaining <= 0) {
+        _showMessage(
+          'Maksimal ${ComplaintService.maxImages} foto yang dapat dilampirkan.',
+        );
+        return;
+      }
+
+      final images = await _imagePicker.pickMultiImage(
         imageQuality: 75,
         maxWidth: 1200,
         maxHeight: 1200,
       );
 
-      if (image == null) return;
+      if (images.isEmpty) return;
 
-      final imageBytes = await image.readAsBytes();
+      final toAdd = images.take(remaining).toList();
+      final bytesList = <Uint8List>[];
+      for (final img in toAdd) {
+        bytesList.add(await img.readAsBytes());
+      }
 
       if (!mounted) return;
 
       setState(() {
-        _selectedImageBytes = imageBytes;
+        _selectedImages.addAll(bytesList);
       });
+
+      if (images.length > remaining) {
+        _showMessage(
+          'Hanya ${ComplaintService.maxImages} foto pertama yang diambil (maksimal ${ComplaintService.maxImages} foto).',
+        );
+      }
     } catch (e) {
       _showMessage('Gagal memilih foto: $e');
     }
@@ -105,9 +122,9 @@ class _CreateComplaintScreenState
   // MENGHAPUS FOTO
   // =====================================================
 
-  void _removeImage() {
+  void _removeImage(int index) {
     setState(() {
-      _selectedImageBytes = null;
+      _selectedImages.removeAt(index);
     });
   }
 
@@ -127,8 +144,8 @@ class _CreateComplaintScreenState
       return;
     }
 
-    if (_selectedImageBytes == null) {
-      _showMessage('Foto bukti wajib dilampirkan.');
+    if (_selectedImages.isEmpty) {
+      _showMessage('Minimal 1 foto bukti wajib dilampirkan.');
       return;
     }
 
@@ -154,12 +171,10 @@ class _CreateComplaintScreenState
         locationAddress: _locationController.text.trim(),
       );
 
-      // Menyimpan pengaduan sekaligus mengunggah foto
-      // melalui Firebase Storage
-      final complaintId =
-          await _complaintService.createComplaint(
+      // Menyimpan pengaduan sekaligus mengunggah foto ke Cloudinary
+      final complaintId = await _complaintService.createComplaint(
         complaint: complaint,
-        imageBytes: _selectedImageBytes!,
+        imageBytesList: _selectedImages,
       );
 
       if (!mounted) return;
@@ -393,10 +408,12 @@ class _CreateComplaintScreenState
               const SizedBox(height: 20),
 
               // FOTO BUKTI
-              _buildLabel('Foto Bukti'),
+              _buildLabel(
+                'Foto Bukti (${_selectedImages.length}/${ComplaintService.maxImages})',
+              ),
 
               const Text(
-                'Pilih satu foto sebagai bukti pengaduan.',
+                'Pilih minimal 1 dan maksimal 5 foto sebagai bukti pengaduan.',
                 style: TextStyle(
                   color: Colors.grey,
                   fontSize: 13,
@@ -406,43 +423,52 @@ class _CreateComplaintScreenState
               const SizedBox(height: 12),
 
               OutlinedButton.icon(
-                onPressed: _isLoading
+                onPressed: _isLoading ||
+                        _selectedImages.length >= ComplaintService.maxImages
                     ? null
-                    : _pickImage,
+                    : _pickImages,
                 icon: const Icon(Icons.add_a_photo),
-                label: const Text('Pilih Foto'),
+                label: Text(
+                  _selectedImages.length >= ComplaintService.maxImages
+                      ? 'Maksimal ${ComplaintService.maxImages} Foto'
+                      : 'Pilih Foto',
+                ),
               ),
 
               const SizedBox(height: 12),
 
-              if (_selectedImageBytes != null)
-                Stack(
-                  children: [
-                    ClipRRect(
-                      borderRadius:
-                          BorderRadius.circular(10),
-                      child: Image.memory(
-                        _selectedImageBytes!,
-                        width: 150,
-                        height: 150,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-
-                    Positioned(
-                      right: 0,
-                      top: 0,
-                      child: IconButton(
-                        onPressed: _isLoading
-                            ? null
-                            : _removeImage,
-                        icon: const Icon(
-                          Icons.cancel,
-                          color: Colors.red,
+              if (_selectedImages.isNotEmpty)
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: List.generate(_selectedImages.length, (index) {
+                    return Stack(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Image.memory(
+                            _selectedImages[index],
+                            width: 110,
+                            height: 110,
+                            fit: BoxFit.cover,
+                          ),
                         ),
-                      ),
-                    ),
-                  ],
+                        Positioned(
+                          right: 0,
+                          top: 0,
+                          child: IconButton(
+                            onPressed: _isLoading
+                                ? null
+                                : () => _removeImage(index),
+                            icon: const Icon(
+                              Icons.cancel,
+                              color: Colors.red,
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  }),
                 ),
 
               const SizedBox(height: 32),

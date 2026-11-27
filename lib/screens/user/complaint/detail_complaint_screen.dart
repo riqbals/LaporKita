@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../models/complaint_model.dart';
 import '../../../services/complaint_service.dart';
+import '../../../widgets/complaint_photo_gallery.dart';
 import '../../../widgets/status_badge.dart';
 
 /// Halaman detail pengaduan untuk User, termasuk tanggapan admin dan aksi batalkan.
@@ -104,22 +105,8 @@ class _DetailComplaintScreenState extends State<DetailComplaintScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          if (complaint.imageUrl.isNotEmpty)
-            ClipRRect(
-              borderRadius: BorderRadius.circular(14),
-              child: Image.network(
-                complaint.imageUrl,
-                height: 220,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                errorBuilder: (_, _, _) => Container(
-                  height: 160,
-                  color: AppColors.divider,
-                  alignment: Alignment.center,
-                  child: const Text('Foto tidak dapat ditampilkan'),
-                ),
-              ),
-            ),
+          if (complaint.allImages.isNotEmpty)
+            ComplaintPhotoGallery(imageUrls: complaint.allImages),
           const SizedBox(height: 16),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,

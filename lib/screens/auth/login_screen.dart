@@ -179,15 +179,19 @@ class _LoginScreenState extends State<LoginScreen> {
                     onPressed: _handleLogin,
                   ),
                   const SizedBox(height: 40),
-                  AuthFooterLink(
-                    promptText: 'Belum punya akun? ',
-                    actionText: 'Daftar di sini',
-                    onTap: () => Navigator.pushNamed(
-                      context,
-                      AppRoutes.register,
-                      arguments: _selectedRole,
+                  if (_selectedRole == UserModel.roleUser)
+                    AuthFooterLink(
+                      promptText: 'Belum punya akun? ',
+                      actionText: 'Daftar di sini',
+                      onTap: () =>
+                          Navigator.pushNamed(context, AppRoutes.register),
+                    )
+                  else
+                    Text(
+                      'Akun Admin dibuat oleh pengelola sistem.',
+                      style: textTheme.bodySmall,
+                      textAlign: TextAlign.center,
                     ),
-                  ),
                 ],
               ),
             ),

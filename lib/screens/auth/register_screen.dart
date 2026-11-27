@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_routes.dart';
 import '../../core/utils/form_validators.dart';
 import '../../models/user_model.dart';
@@ -9,7 +8,7 @@ import '../../widgets/custom_input.dart';
 import '../../widgets/primary_button.dart';
 import 'widgets/auth_footer_link.dart';
 
-/// Halaman registrasi akun baru (Masyarakat / Admin).
+/// Halaman registrasi akun baru (role otomatis "user" sesuai PRD).
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
 
@@ -25,22 +24,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _confirmPasswordController = TextEditingController();
   late final AuthService _authService = AuthService();
 
-  String _selectedRole = UserModel.roleUser;
-  bool _roleInitialized = false;
   bool _isLoading = false;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (!_roleInitialized) {
-      final arg = ModalRoute.of(context)?.settings.arguments;
-      if (arg is String &&
-          (arg == UserModel.roleUser || arg == UserModel.roleAdmin)) {
-        _selectedRole = arg;
-      }
-      _roleInitialized = true;
-    }
-  }
 
   @override
   void dispose() {
@@ -61,7 +45,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         name: _nameController.text.trim(),
         email: _emailController.text.trim(),
         password: _passwordController.text,
-        role: _selectedRole,
+        role: UserModel.roleUser,
       );
 
       if (user == null) {
@@ -70,13 +54,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       if (!mounted) return;
 
-      final targetRoute = _selectedRole == UserModel.roleAdmin
-          ? AppRoutes.dashboardAdmin
-          : AppRoutes.homeUser;
-
       Navigator.pushNamedAndRemoveUntil(
         context,
-        targetRoute,
+        AppRoutes.homeUser,
         (route) => false,
       );
     } catch (e) {
@@ -133,40 +113,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
             key: _formKey,
             child: Column(
               children: [
-                SizedBox(
-                  width: double.infinity,
-                  child: SegmentedButton<String>(
-                    segments: const [
-                      ButtonSegment<String>(
-                        value: UserModel.roleUser,
-                        label: Text('Masyarakat'),
-                        icon: Icon(Icons.person_outline),
-                      ),
-                      ButtonSegment<String>(
-                        value: UserModel.roleAdmin,
-                        label: Text('Admin'),
-                        icon: Icon(Icons.admin_panel_settings_outlined),
-                      ),
-                    ],
-                    selected: {_selectedRole},
-                    onSelectionChanged: (selection) {
-                      setState(() => _selectedRole = selection.first);
-                    },
-                    style: ButtonStyle(
-                      backgroundColor: WidgetStateProperty.resolveWith(
-                        (states) => states.contains(WidgetState.selected)
-                            ? AppColors.primarySoft
-                            : AppColors.surface,
-                      ),
-                      foregroundColor: WidgetStateProperty.resolveWith(
-                        (states) => states.contains(WidgetState.selected)
-                            ? AppColors.primaryDark
-                            : AppColors.textSecondary,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
                 CustomInput(
                   controller: _nameController,
                   hintText: 'Nama Lengkap',
