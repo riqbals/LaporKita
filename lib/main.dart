@@ -8,6 +8,7 @@ import 'screens/admin/dashboard_admin_screen.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/onboarding_screen.dart';
 import 'screens/auth/register_screen.dart';
+import 'screens/auth/role_selection_screen.dart';
 import 'screens/auth/splash_screen.dart';
 import 'screens/profile/edit_profile_screen.dart';
 import 'screens/profile/faq_screen.dart';
@@ -18,9 +19,7 @@ import 'screens/user/home_user_screen.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   runApp(const LaporKitaApp());
 }
@@ -34,17 +33,18 @@ class LaporKitaApp extends StatelessWidget {
       title: 'LaporKita',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      initialRoute: AppRoutes.login,
+      initialRoute: AppRoutes.roleSelection,
       onGenerateInitialRoutes: (_) => [
         MaterialPageRoute(
-          builder: (_) => const LoginScreen(),
-          settings: const RouteSettings(name: AppRoutes.login),
+          builder: (_) => const RoleSelectionScreen(),
+          settings: const RouteSettings(name: AppRoutes.roleSelection),
         ),
       ],
       onGenerateRoute: (settings) {
         final Widget page = switch (settings.name) {
           AppRoutes.splash => const SplashScreen(),
           AppRoutes.onboarding => const OnboardingScreen(),
+          AppRoutes.roleSelection => const RoleSelectionScreen(),
           AppRoutes.login => const LoginScreen(),
           AppRoutes.register => const RegisterScreen(),
           AppRoutes.homeUser => const HomeUserScreen(),
@@ -53,7 +53,7 @@ class LaporKitaApp extends StatelessWidget {
           AppRoutes.profile => const ProfileScreen(),
           AppRoutes.editProfile => const EditProfileScreen(),
           AppRoutes.faq => const FaqScreen(),
-          _ => const LoginScreen(),
+          _ => const RoleSelectionScreen(),
         };
         return MaterialPageRoute(builder: (_) => page, settings: settings);
       },

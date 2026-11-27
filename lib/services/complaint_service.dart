@@ -1,6 +1,4 @@
-
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -10,11 +8,9 @@ import 'package:flutter/foundation.dart';
 import '../models/complaint_model.dart';
 
 class ComplaintService {
-  final FirebaseFirestore _firestore =
-      FirebaseFirestore.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  final FirebaseAuth _auth =
-      FirebaseAuth.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   // =========================================
   // KONFIGURASI CLOUDINARY
@@ -54,8 +50,7 @@ class ComplaintService {
 
     final userDoc = await _users.doc(user.uid).get();
 
-    if (!userDoc.exists ||
-        userDoc.data()?['role'] != 'admin') {
+    if (!userDoc.exists || userDoc.data()?['role'] != 'admin') {
       throw Exception('Akses hanya untuk admin.');
     }
   }
@@ -77,15 +72,12 @@ class ComplaintService {
       }
 
       if (imageBytes.length > maxImageSize) {
-        throw Exception(
-          'Ukuran foto maksimal 5 MB.',
-        );
+        throw Exception('Ukuran foto maksimal 5 MB.');
       }
 
       // Memastikan pengaduan sudah dibuat
       // dan merupakan milik pengguna yang login.
-      final complaintDoc =
-          await _complaints.doc(complaintId).get();
+      final complaintDoc = await _complaints.doc(complaintId).get();
 
       if (!complaintDoc.exists) {
         throw Exception('Pengaduan tidak ditemukan.');
@@ -94,13 +86,10 @@ class ComplaintService {
       final complaintData = complaintDoc.data()!;
 
       if (complaintData['userId'] != user.uid) {
-        throw Exception(
-          'Kamu tidak memiliki akses ke pengaduan ini.',
-        );
+        throw Exception('Kamu tidak memiliki akses ke pengaduan ini.');
       }
 
-      if (complaintData['status'] !=
-          ComplaintModel.statusMenunggu) {
+      if (complaintData['status'] != ComplaintModel.statusMenunggu) {
         throw Exception(
           'Foto hanya dapat diunggah untuk pengaduan berstatus Menunggu.',
         );
@@ -109,10 +98,7 @@ class ComplaintService {
       // Menyiapkan request multipart ke Cloudinary.
       final uri = Uri.parse(uploadUrl);
 
-      final request = http.MultipartRequest(
-        'POST',
-        uri,
-      );
+      final request = http.MultipartRequest('POST', uri);
 
       request.fields['upload_preset'] = uploadPreset;
       request.fields['folder'] = 'complaint_images';
@@ -127,44 +113,35 @@ class ComplaintService {
 
       // Menampilkan isi request untuk pemeriksaan.
       debugPrint('CLOUDINARY FIELDS: ${request.fields}');
-    
+
       // Mengirim foto ke Cloudinary.
-      final streamedResponse = await request
-          .send()
-          .timeout(const Duration(seconds: 60));
+      final streamedResponse = await request.send().timeout(
+        const Duration(seconds: 60),
+      );
 
-      final response =
-          await http.Response.fromStream(streamedResponse);
-          debugPrint('CLOUDINARY URL: $uploadUrl');
-          debugPrint('CLOUDINARY STATUS: ${response.statusCode}');
-          debugPrint('CLOUDINARY RESPONSE: ${response.body}');
+      final response = await http.Response.fromStream(streamedResponse);
+      debugPrint('CLOUDINARY URL: $uploadUrl');
+      debugPrint('CLOUDINARY STATUS: ${response.statusCode}');
+      debugPrint('CLOUDINARY RESPONSE: ${response.body}');
 
-      final dynamic decodedResponse =
-          jsonDecode(response.body);
+      final dynamic decodedResponse = jsonDecode(response.body);
 
-      if (response.statusCode != 200 &&
-          response.statusCode != 201) {
-        String errorMessage =
-            'Upload foto ke Cloudinary gagal.';
+      if (response.statusCode != 200 && response.statusCode != 201) {
+        String errorMessage = 'Upload foto ke Cloudinary gagal.';
 
         if (decodedResponse is Map) {
           final errorData = decodedResponse['error'];
 
-          if (errorData is Map &&
-              errorData['message'] != null) {
-            errorMessage =
-                errorData['message'].toString();
+          if (errorData is Map && errorData['message'] != null) {
+            errorMessage = errorData['message'].toString();
           }
         }
 
         throw Exception(errorMessage);
       }
 
-      if (decodedResponse is! Map ||
-          decodedResponse['secure_url'] == null) {
-        throw Exception(
-          'Cloudinary tidak mengembalikan URL foto.',
-        );
+      if (decodedResponse is! Map || decodedResponse['secure_url'] == null) {
+        throw Exception('Cloudinary tidak mengembalikan URL foto.');
       }
 
       // Mengambil URL HTTPS dari Cloudinary.
@@ -198,21 +175,15 @@ class ComplaintService {
       if (complaint.title.trim().isEmpty ||
           complaint.description.trim().isEmpty ||
           complaint.locationAddress.trim().isEmpty) {
-        throw Exception(
-          'Data pengaduan belum lengkap.',
-        );
+        throw Exception('Data pengaduan belum lengkap.');
       }
 
       if (imageBytesList.isEmpty) {
-        throw Exception(
-          'Minimal 1 foto bukti wajib dilampirkan.',
-        );
+        throw Exception('Minimal 1 foto bukti wajib dilampirkan.');
       }
 
       if (imageBytesList.length > maxImages) {
-        throw Exception(
-          'Maksimal $maxImages foto bukti per pengaduan.',
-        );
+        throw Exception('Maksimal $maxImages foto bukti per pengaduan.');
       }
 
       for (final bytes in imageBytesList) {
@@ -228,26 +199,20 @@ class ComplaintService {
       final userDoc = await _users.doc(user.uid).get();
 
       if (!userDoc.exists) {
-        throw Exception(
-          'Profil pengguna tidak ditemukan.',
-        );
+        throw Exception('Profil pengguna tidak ditemukan.');
       }
 
       final userData = userDoc.data()!;
       final userName = userData['name'] as String? ?? '';
 
       if (userName.trim().isEmpty) {
-        throw Exception(
-          'Nama pengguna belum tersedia.',
-        );
+        throw Exception('Nama pengguna belum tersedia.');
       }
 
       // Memastikan hanya masyarakat/user yang dapat mengadu.
       final role = userData['role'];
       if (role != 'user' && role != 'masyarakat') {
-        throw Exception(
-          'Hanya masyarakat yang dapat membuat pengaduan.',
-        );
+        throw Exception('Hanya masyarakat yang dapat membuat pengaduan.');
       }
 
       // 1. Membuat ID dokumen Firestore.
@@ -299,9 +264,7 @@ class ComplaintService {
         }
       }
 
-      throw Exception(
-        'Gagal membuat pengaduan: $e',
-      );
+      throw Exception('Gagal membuat pengaduan: $e');
     }
   }
 
@@ -317,13 +280,10 @@ class ComplaintService {
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs.map((doc) {
-        return ComplaintModel.fromMap(
-          doc.data(),
-          doc.id,
-        );
-      }).toList();
-    });
+          return snapshot.docs.map((doc) {
+            return ComplaintModel.fromMap(doc.data(), doc.id);
+          }).toList();
+        });
   }
 
   // =========================================
@@ -340,15 +300,10 @@ class ComplaintService {
           .get();
 
       return snapshot.docs.map((doc) {
-        return ComplaintModel.fromMap(
-          doc.data(),
-          doc.id,
-        );
+        return ComplaintModel.fromMap(doc.data(), doc.id);
       }).toList();
     } catch (e) {
-      throw Exception(
-        'Gagal mengambil pengaduan: $e',
-      );
+      throw Exception('Gagal mengambil pengaduan: $e');
     }
   }
 
@@ -356,9 +311,7 @@ class ComplaintService {
   // MASYARAKAT: DETAIL PENGADUAN
   // =========================================
 
-  Future<ComplaintModel?> getComplaintById(
-    String complaintId,
-  ) async {
+  Future<ComplaintModel?> getComplaintById(String complaintId) async {
     try {
       final user = _requireLogin();
 
@@ -371,19 +324,12 @@ class ComplaintService {
       final data = doc.data()!;
 
       if (data['userId'] != user.uid) {
-        throw Exception(
-          'Kamu tidak memiliki akses ke pengaduan ini.',
-        );
+        throw Exception('Kamu tidak memiliki akses ke pengaduan ini.');
       }
 
-      return ComplaintModel.fromMap(
-        data,
-        doc.id,
-      );
+      return ComplaintModel.fromMap(data, doc.id);
     } catch (e) {
-      throw Exception(
-        'Gagal mengambil detail pengaduan: $e',
-      );
+      throw Exception('Gagal mengambil detail pengaduan: $e');
     }
   }
 
@@ -391,9 +337,7 @@ class ComplaintService {
   // MASYARAKAT: MENGHAPUS PENGADUAN
   // =========================================
 
-  Future<void> deleteMyComplaint(
-    String complaintId,
-  ) async {
+  Future<void> deleteMyComplaint(String complaintId) async {
     try {
       final user = _requireLogin();
 
@@ -401,21 +345,16 @@ class ComplaintService {
       final doc = await docRef.get();
 
       if (!doc.exists) {
-        throw Exception(
-          'Pengaduan tidak ditemukan.',
-        );
+        throw Exception('Pengaduan tidak ditemukan.');
       }
 
       final data = doc.data()!;
 
       if (data['userId'] != user.uid) {
-        throw Exception(
-          'Kamu tidak memiliki akses ke pengaduan ini.',
-        );
+        throw Exception('Kamu tidak memiliki akses ke pengaduan ini.');
       }
 
-      if (data['status'] !=
-          ComplaintModel.statusMenunggu) {
+      if (data['status'] != ComplaintModel.statusMenunggu) {
         throw Exception(
           'Pengaduan hanya dapat dihapus saat berstatus Menunggu.',
         );
@@ -429,9 +368,7 @@ class ComplaintService {
       // Penghapusan aset Cloudinary membutuhkan
       // autentikasi server-side yang aman.
     } catch (e) {
-      throw Exception(
-        'Gagal menghapus pengaduan: $e',
-      );
+      throw Exception('Gagal menghapus pengaduan: $e');
     }
   }
 
@@ -439,41 +376,26 @@ class ComplaintService {
   // ADMIN: QUERY SEMUA PENGADUAN
   // =========================================
 
-  Query<Map<String, dynamic>> _adminComplaintsQuery({
-    String? status,
-  }) {
+  Query<Map<String, dynamic>> _adminComplaintsQuery({String? status}) {
     Query<Map<String, dynamic>> query = _complaints;
 
     if (status != null && status.isNotEmpty) {
-      query = query.where(
-        'status',
-        isEqualTo: status,
-      );
+      query = query.where('status', isEqualTo: status);
     }
 
-    return query.orderBy(
-      'createdAt',
-      descending: true,
-    );
+    return query.orderBy('createdAt', descending: true);
   }
 
   // =========================================
   // ADMIN: REAL-TIME SEMUA PENGADUAN
   // =========================================
 
-  Stream<List<ComplaintModel>> getAllComplaintsStream({
-    String? status,
-  }) async* {
+  Stream<List<ComplaintModel>> getAllComplaintsStream({String? status}) async* {
     await _requireAdmin();
 
-    yield* _adminComplaintsQuery(status: status)
-        .snapshots()
-        .map((snapshot) {
+    yield* _adminComplaintsQuery(status: status).snapshots().map((snapshot) {
       return snapshot.docs.map((doc) {
-        return ComplaintModel.fromMap(
-          doc.data(),
-          doc.id,
-        );
+        return ComplaintModel.fromMap(doc.data(), doc.id);
       }).toList();
     });
   }
@@ -482,25 +404,17 @@ class ComplaintService {
   // ADMIN: MENGAMBIL SEMUA PENGADUAN SEKALI
   // =========================================
 
-  Future<List<ComplaintModel>> getAllComplaints({
-    String? status,
-  }) async {
+  Future<List<ComplaintModel>> getAllComplaints({String? status}) async {
     try {
       await _requireAdmin();
 
-      final snapshot =
-          await _adminComplaintsQuery(status: status).get();
+      final snapshot = await _adminComplaintsQuery(status: status).get();
 
       return snapshot.docs.map((doc) {
-        return ComplaintModel.fromMap(
-          doc.data(),
-          doc.id,
-        );
+        return ComplaintModel.fromMap(doc.data(), doc.id);
       }).toList();
     } catch (e) {
-      throw Exception(
-        'Gagal mengambil semua pengaduan: $e',
-      );
+      throw Exception('Gagal mengambil semua pengaduan: $e');
     }
   }
 
@@ -523,9 +437,7 @@ class ComplaintService {
       ];
 
       if (!allowedStatuses.contains(newStatus)) {
-        throw Exception(
-          'Status pengaduan tidak valid.',
-        );
+        throw Exception('Status pengaduan tidak valid.');
       }
 
       if ((newStatus == ComplaintModel.statusSelesai ||
@@ -542,29 +454,20 @@ class ComplaintService {
         final doc = await transaction.get(docRef);
 
         if (!doc.exists) {
-          throw Exception(
-            'Pengaduan tidak ditemukan.',
-          );
+          throw Exception('Pengaduan tidak ditemukan.');
         }
 
         final currentStatus = doc.data()?['status'];
 
         final isValidTransition =
-            (currentStatus ==
-                    ComplaintModel.statusMenunggu &&
-                (newStatus ==
-                        ComplaintModel.statusDiproses ||
-                    newStatus ==
-                        ComplaintModel.statusDitolak)) ||
-            (currentStatus ==
-                    ComplaintModel.statusDiproses &&
-                newStatus ==
-                    ComplaintModel.statusSelesai);
+            (currentStatus == ComplaintModel.statusMenunggu &&
+                (newStatus == ComplaintModel.statusDiproses ||
+                    newStatus == ComplaintModel.statusDitolak)) ||
+            (currentStatus == ComplaintModel.statusDiproses &&
+                newStatus == ComplaintModel.statusSelesai);
 
         if (!isValidTransition) {
-          throw Exception(
-            'Perubahan status tidak sesuai alur pengaduan.',
-          );
+          throw Exception('Perubahan status tidak sesuai alur pengaduan.');
         }
 
         transaction.update(docRef, {
@@ -574,9 +477,7 @@ class ComplaintService {
         });
       });
     } catch (e) {
-      throw Exception(
-        'Gagal memperbarui pengaduan: $e',
-      );
+      throw Exception('Gagal memperbarui pengaduan: $e');
     }
   }
 
@@ -601,16 +502,13 @@ class ComplaintService {
         final status = doc.data()['status'];
 
         if (statistics.containsKey(status)) {
-          statistics[status] =
-              statistics[status]! + 1;
+          statistics[status] = statistics[status]! + 1;
         }
       }
 
       return statistics;
     } catch (e) {
-      throw Exception(
-        'Gagal mengambil statistik: $e',
-      );
+      throw Exception('Gagal mengambil statistik: $e');
     }
   }
 }

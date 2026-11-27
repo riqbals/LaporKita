@@ -10,10 +10,7 @@ import '../../widgets/status_badge.dart';
 
 /// Halaman detail & penanganan aduan oleh Admin sesuai State Machine PRD.
 class DetailAdminScreen extends StatefulWidget {
-  const DetailAdminScreen({
-    super.key,
-    required this.complaint,
-  });
+  const DetailAdminScreen({super.key, required this.complaint});
 
   final ComplaintModel complaint;
 
@@ -30,12 +27,10 @@ class _DetailAdminScreenState extends State<DetailAdminScreen> {
   List<String> get _allowedNextStatuses {
     return switch (widget.complaint.status) {
       ComplaintModel.statusMenunggu => const [
-          ComplaintModel.statusDiproses,
-          ComplaintModel.statusDitolak,
-        ],
-      ComplaintModel.statusDiproses => const [
-          ComplaintModel.statusSelesai,
-        ],
+        ComplaintModel.statusDiproses,
+        ComplaintModel.statusDitolak,
+      ],
+      ComplaintModel.statusDiproses => const [ComplaintModel.statusSelesai],
       _ => const [],
     };
   }
@@ -43,8 +38,9 @@ class _DetailAdminScreenState extends State<DetailAdminScreen> {
   @override
   void initState() {
     super.initState();
-    _responseController =
-        TextEditingController(text: widget.complaint.adminResponse);
+    _responseController = TextEditingController(
+      text: widget.complaint.adminResponse,
+    );
     final options = _allowedNextStatuses;
     if (options.isNotEmpty) {
       _selectedNextStatus = options.first;
@@ -111,14 +107,17 @@ class _DetailAdminScreenState extends State<DetailAdminScreen> {
     final nextOptions = _allowedNextStatuses;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Tindak Lanjut Aduan'),
-      ),
+      appBar: AppBar(title: const Text('Kelola Aduan')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           if (complaint.allImages.isNotEmpty)
-            ComplaintPhotoGallery(imageUrls: complaint.allImages),
+            ComplaintPhotoGallery(imageUrls: complaint.allImages)
+          else
+            ClipRRect(
+              borderRadius: BorderRadius.circular(14),
+              child: _photoPlaceholder(),
+            ),
           const SizedBox(height: 16),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -131,13 +130,46 @@ class _DetailAdminScreenState extends State<DetailAdminScreen> {
             ],
           ),
           const SizedBox(height: 6),
-          Text(
-            'Pelapor: ${complaint.userName} • ${complaint.categoryName}',
-            style: textTheme.bodySmall,
+          Text('Pelapor: ${complaint.userName}', style: textTheme.bodySmall),
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppColors.primarySoft,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                complaint.categoryName,
+                style: textTheme.bodySmall?.copyWith(
+                  color: AppColors.primaryDark,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              const Icon(
+                Icons.location_on_outlined,
+                size: 16,
+                color: AppColors.error,
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  complaint.locationAddress,
+                  style: textTheme.bodySmall?.copyWith(
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 12),
-          Text('Lokasi: ${complaint.locationAddress}', style: textTheme.bodyMedium),
-          const SizedBox(height: 8),
           Text(complaint.description, style: textTheme.bodyMedium),
           const Divider(height: 32),
           if (nextOptions.isEmpty)
@@ -151,8 +183,10 @@ class _DetailAdminScreenState extends State<DetailAdminScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Status Final (${complaint.status})',
-                      style: textTheme.titleMedium),
+                  Text(
+                    'Status Final (${complaint.status})',
+                    style: textTheme.titleMedium,
+                  ),
                   const SizedBox(height: 6),
                   Text(
                     complaint.adminResponse.isNotEmpty
@@ -164,16 +198,15 @@ class _DetailAdminScreenState extends State<DetailAdminScreen> {
               ),
             )
           else ...[
-            Text('Ubah Status', style: textTheme.titleMedium),
-            const SizedBox(height: 8),
+            Text('Tindak Lanjut Petugas', style: textTheme.titleMedium),
+            const SizedBox(height: 12),
             DropdownButtonFormField<String>(
               initialValue: _selectedNextStatus,
+              decoration: const InputDecoration(hintText: 'Ubah Status'),
               items: nextOptions
                   .map(
-                    (status) => DropdownMenuItem(
-                      value: status,
-                      child: Text(status),
-                    ),
+                    (status) =>
+                        DropdownMenuItem(value: status, child: Text(status)),
                   )
                   .toList(),
               onChanged: (value) {
@@ -181,12 +214,11 @@ class _DetailAdminScreenState extends State<DetailAdminScreen> {
               },
             ),
             const SizedBox(height: 16),
-            Text('Tanggapan Resmi Petugas', style: textTheme.titleMedium),
-            const SizedBox(height: 8),
             CustomInput(
               controller: _responseController,
-              hintText: 'Tulis tindak lanjut atau alasan penolakan...',
+              hintText: 'Catatan Tanggapan Resmi',
               maxLines: 4,
+              maxLength: 500,
             ),
             const SizedBox(height: 20),
             PrimaryButton(
@@ -196,6 +228,19 @@ class _DetailAdminScreenState extends State<DetailAdminScreen> {
             ),
           ],
         ],
+      ),
+    );
+  }
+
+  Widget _photoPlaceholder() {
+    return Container(
+      height: 180,
+      width: double.infinity,
+      color: AppColors.divider,
+      alignment: Alignment.center,
+      child: const Text(
+        'Foto Aduan',
+        style: TextStyle(color: AppColors.textSecondary),
       ),
     );
   }

@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/constants/app_colors.dart';
@@ -9,14 +10,17 @@ import 'detail_admin_screen.dart';
 
 /// Dashboard Petugas (Admin) untuk memantau ringkasan dan daftar semua aduan.
 class DashboardAdminScreen extends StatefulWidget {
-  const DashboardAdminScreen({super.key});
+  const DashboardAdminScreen({super.key, this.initialComplaints});
+
+  /// Opsional untuk pengujian UI tanpa Firebase.
+  final List<ComplaintModel>? initialComplaints;
 
   @override
   State<DashboardAdminScreen> createState() => _DashboardAdminScreenState();
 }
 
 class _DashboardAdminScreenState extends State<DashboardAdminScreen> {
-  late final ComplaintService _complaintService = ComplaintService();
+  late final Stream<List<ComplaintModel>> _complaintsStream;
   String? _selectedStatus;
 
   static const _filters = <String?>[
@@ -28,22 +32,47 @@ class _DashboardAdminScreenState extends State<DashboardAdminScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    if (widget.initialComplaints != null) {
+      _complaintsStream = Stream.value(widget.initialComplaints!);
+    } else if (Firebase.apps.isEmpty) {
+      _complaintsStream = Stream.value(const []);
+    } else {
+      _complaintsStream = ComplaintService().getAllComplaintsStream();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Dashboard Admin'),
+        title: const Text('Dashboard Petugas'),
         actions: [
-          IconButton(
-            tooltip: 'Profil',
-            icon: const Icon(Icons.person_outline),
-            onPressed: () => Navigator.pushNamed(context, AppRoutes.profile),
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: InkWell(
+              onTap: () => Navigator.pushNamed(context, AppRoutes.profile),
+              borderRadius: BorderRadius.circular(20),
+              child: const CircleAvatar(
+                radius: 18,
+                backgroundColor: AppColors.primarySoft,
+                child: Text(
+                  'P',
+                  style: TextStyle(
+                    color: AppColors.primaryDark,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
           ),
         ],
       ),
       body: StreamBuilder<List<ComplaintModel>>(
-        stream: _complaintService.getAllComplaintsStream(),
+        stream: _complaintsStream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -71,41 +100,45 @@ class _DashboardAdminScreenState extends State<DashboardAdminScreen> {
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              GridView.count(
-                crossAxisCount: 2,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                crossAxisSpacing: 10,
-                mainAxisSpacing: 10,
-                childAspectRatio: 2.2,
+              Row(
                 children: [
-                  _SummaryCard(
-                    label: 'Menunggu',
-                    count: allComplaints
-                        .where((c) => c.status == ComplaintModel.statusMenunggu)
-                        .length,
-                    color: AppColors.statusWaiting,
+                  Expanded(
+                    child: _SummaryCard(
+                      label: 'Menunggu',
+                      count: allComplaints
+                          .where(
+                            (c) => c.status == ComplaintModel.statusMenunggu,
+                          )
+                          .length,
+                      color: AppColors.statusWaiting,
+                      backgroundColor: AppColors.statusWaitingSoft,
+                    ),
                   ),
-                  _SummaryCard(
-                    label: 'Diproses',
-                    count: allComplaints
-                        .where((c) => c.status == ComplaintModel.statusDiproses)
-                        .length,
-                    color: AppColors.statusInProgress,
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _SummaryCard(
+                      label: 'Diproses',
+                      count: allComplaints
+                          .where(
+                            (c) => c.status == ComplaintModel.statusDiproses,
+                          )
+                          .length,
+                      color: AppColors.statusInProgress,
+                      backgroundColor: AppColors.statusInProgressSoft,
+                    ),
                   ),
-                  _SummaryCard(
-                    label: 'Selesai',
-                    count: allComplaints
-                        .where((c) => c.status == ComplaintModel.statusSelesai)
-                        .length,
-                    color: AppColors.statusDone,
-                  ),
-                  _SummaryCard(
-                    label: 'Ditolak',
-                    count: allComplaints
-                        .where((c) => c.status == ComplaintModel.statusDitolak)
-                        .length,
-                    color: AppColors.statusRejected,
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _SummaryCard(
+                      label: 'Selesai',
+                      count: allComplaints
+                          .where(
+                            (c) => c.status == ComplaintModel.statusSelesai,
+                          )
+                          .length,
+                      color: AppColors.statusDone,
+                      backgroundColor: AppColors.statusDoneSoft,
+                    ),
                   ),
                 ],
               ),
@@ -120,6 +153,15 @@ class _DashboardAdminScreenState extends State<DashboardAdminScreen> {
                       child: ChoiceChip(
                         label: Text(status ?? 'Semua'),
                         selected: isSelected,
+                        selectedColor: AppColors.primarySoft,
+                        labelStyle: TextStyle(
+                          color: isSelected
+                              ? AppColors.primaryDark
+                              : AppColors.textSecondary,
+                          fontWeight:
+                              isSelected ? FontWeight.w600 : FontWeight.w400,
+                          fontSize: 13,
+                        ),
                         onSelected: (_) {
                           setState(() => _selectedStatus = status);
                         },
@@ -137,7 +179,9 @@ class _DashboardAdminScreenState extends State<DashboardAdminScreen> {
               if (filtered.isEmpty)
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 40),
-                  child: Center(child: Text('Tidak ada pengaduan pada filter ini.')),
+                  child: Center(
+                    child: Text('Tidak ada pengaduan pada filter ini.'),
+                  ),
                 )
               else
                 ...filtered.map(
@@ -165,36 +209,38 @@ class _SummaryCard extends StatelessWidget {
     required this.label,
     required this.count,
     required this.color,
+    required this.backgroundColor,
   });
 
   final String label;
   final int count;
   final Color color;
+  final Color backgroundColor;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 14),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.divider),
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(14),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Column(
         children: [
-          Text(
-            label,
-            style: const TextStyle(
-              fontWeight: FontWeight.w600,
-              color: AppColors.textSecondary,
-            ),
-          ),
           Text(
             '$count',
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w700,
+              color: color,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
               color: color,
             ),
           ),
