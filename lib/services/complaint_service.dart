@@ -23,6 +23,7 @@ class ComplaintService {
       'https://api.cloudinary.com/v1_1/$cloudName/image/upload';
 
   static const int maxImageSize = 5 * 1024 * 1024;
+  static const int maxImages = 5;
 
   CollectionReference<Map<String, dynamic>> get _complaints =>
       _firestore.collection('complaints');
@@ -61,6 +62,7 @@ class ComplaintService {
   Future<String> uploadComplaintPhoto({
     required Uint8List imageBytes,
     required String complaintId,
+    int index = 0,
   }) async {
     try {
       final user = _requireLogin();
@@ -105,7 +107,7 @@ class ComplaintService {
         http.MultipartFile.fromBytes(
           'file',
           imageBytes,
-          filename: '$complaintId.jpg',
+          filename: '${complaintId}_$index.jpg',
         ),
       );
 
@@ -157,7 +159,7 @@ class ComplaintService {
 
   Future<String> createComplaint({
     required ComplaintModel complaint,
-    required Uint8List imageBytes,
+    required List<Uint8List> imageBytesList,
   }) async {
     DocumentReference<Map<String, dynamic>>? docRef;
 
@@ -176,12 +178,21 @@ class ComplaintService {
         throw Exception('Data pengaduan belum lengkap.');
       }
 
-      if (imageBytes.isEmpty) {
-        throw Exception('Foto bukti wajib dilampirkan.');
+      if (imageBytesList.isEmpty) {
+        throw Exception('Minimal 1 foto bukti wajib dilampirkan.');
       }
 
-      if (imageBytes.length > maxImageSize) {
-        throw Exception('Ukuran foto maksimal 5 MB.');
+      if (imageBytesList.length > maxImages) {
+        throw Exception('Maksimal $maxImages foto bukti per pengaduan.');
+      }
+
+      for (final bytes in imageBytesList) {
+        if (bytes.isEmpty) {
+          throw Exception('Foto tidak boleh kosong.');
+        }
+        if (bytes.length > maxImageSize) {
+          throw Exception('Ukuran setiap foto maksimal 5 MB.');
+        }
       }
 
       // Mengambil profil pengguna.
@@ -210,26 +221,35 @@ class ComplaintService {
       final complaintId = docRef.id;
 
       // 2. Menyimpan dokumen awal ke Firestore.
-      // imageUrl dikosongkan sementara.
+      // imageUrl & imageUrls dikosongkan sementara.
       final newComplaint = complaint.copyWith(
         complaintId: complaintId,
         userId: user.uid,
         userName: userName,
         imageUrl: '',
+        imageUrls: const [],
         status: ComplaintModel.statusMenunggu,
         adminResponse: '',
       );
 
       await docRef.set(newComplaint.toMap());
 
-      // 3. Mengunggah foto ke Cloudinary.
-      final imageUrl = await uploadComplaintPhoto(
-        imageBytes: imageBytes,
-        complaintId: complaintId,
-      );
+      // 3. Mengunggah semua foto ke Cloudinary.
+      final uploadedUrls = <String>[];
+      for (var i = 0; i < imageBytesList.length; i++) {
+        final url = await uploadComplaintPhoto(
+          imageBytes: imageBytesList[i],
+          complaintId: complaintId,
+          index: i,
+        );
+        uploadedUrls.add(url);
+      }
 
       // 4. Memperbarui URL foto di Firestore.
-      await docRef.update({'imageUrl': imageUrl});
+      await docRef.update({
+        'imageUrl': uploadedUrls.first,
+        'imageUrls': uploadedUrls,
+      });
 
       return complaintId;
     } catch (e) {

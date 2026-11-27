@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../../models/complaint_model.dart';
 import '../../services/complaint_service.dart';
+import '../../widgets/complaint_photo_gallery.dart';
 import '../../widgets/custom_input.dart';
 import '../../widgets/primary_button.dart';
 import '../../widgets/status_badge.dart';
@@ -110,18 +111,13 @@ class _DetailAdminScreenState extends State<DetailAdminScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(14),
-            child: complaint.imageUrl.isNotEmpty
-                ? Image.network(
-                    complaint.imageUrl,
-                    height: 220,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, _, _) => _photoPlaceholder(),
-                  )
-                : _photoPlaceholder(),
-          ),
+          if (complaint.allImages.isNotEmpty)
+            ComplaintPhotoGallery(imageUrls: complaint.allImages)
+          else
+            ClipRRect(
+              borderRadius: BorderRadius.circular(14),
+              child: _photoPlaceholder(),
+            ),
           const SizedBox(height: 16),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,

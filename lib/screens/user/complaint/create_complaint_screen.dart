@@ -176,10 +176,9 @@ class _CreateComplaintScreenState extends State<CreateComplaintScreen> {
         locationAddress: _locationController.text.trim(),
       );
 
-      // TODO: Perbarui ComplaintService jika backend sudah mendukung multi-foto.
       final complaintId = await ComplaintService().createComplaint(
         complaint: complaint,
-        imageBytes: _selectedImages.first,
+        imageBytesList: _selectedImages,
       );
 
       if (!mounted) return;

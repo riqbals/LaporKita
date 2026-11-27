@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../models/complaint_model.dart';
 import '../../../services/complaint_service.dart';
+import '../../../widgets/complaint_photo_gallery.dart';
 import '../../../widgets/status_badge.dart';
 
 class ComplaintHistoryScreen extends StatefulWidget {
@@ -109,16 +110,12 @@ class _ComplaintHistoryScreenState extends State<ComplaintHistoryScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (complaint.imageUrl.isNotEmpty) ...[
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: Image.network(
-                    complaint.imageUrl,
-                    width: double.infinity,
+              if (complaint.allImages.isNotEmpty) ...[
+                SizedBox(
+                  width: 300,
+                  child: ComplaintPhotoGallery(
+                    imageUrls: complaint.allImages,
                     height: 180,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) =>
-                        const Text('Foto tidak dapat ditampilkan.'),
                   ),
                 ),
                 const SizedBox(height: 12),

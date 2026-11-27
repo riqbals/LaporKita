@@ -16,6 +16,7 @@ class ComplaintModel {
   final String description;
   final String locationAddress;
   final String imageUrl;
+  final List<String> imageUrls;
   final String status;
   final String adminResponse;
   final DateTime? createdAt;
@@ -31,11 +32,19 @@ class ComplaintModel {
     required this.description,
     required this.locationAddress,
     this.imageUrl = '',
+    this.imageUrls = const [],
     this.status = statusMenunggu,
     this.adminResponse = '',
     this.createdAt,
     this.updatedAt,
   });
+
+  /// Mengembalikan seluruh URL foto (mendukung format baru `imageUrls` maupun lama `imageUrl`).
+  List<String> get allImages {
+    if (imageUrls.isNotEmpty) return imageUrls;
+    if (imageUrl.isNotEmpty) return [imageUrl];
+    return const [];
+  }
 
   // Mengubah model menjadi Map untuk Firestore
   Map<String, dynamic> toMap() {
@@ -49,6 +58,7 @@ class ComplaintModel {
       'description': description,
       'locationAddress': locationAddress,
       'imageUrl': imageUrl,
+      'imageUrls': imageUrls,
       'status': status,
       'adminResponse': adminResponse,
       'createdAt': FieldValue.serverTimestamp(),
@@ -61,6 +71,13 @@ class ComplaintModel {
     Map<String, dynamic> map,
     String documentId,
   ) {
+    final parsedUrls = (map['imageUrls'] as List?)
+            ?.map((e) => e.toString())
+            .where((e) => e.isNotEmpty)
+            .toList() ??
+        const <String>[];
+    final singleUrl = (map['imageUrl'] as String?) ?? '';
+
     return ComplaintModel(
       complaintId: documentId,
       userId: map['userId'] ?? '',
@@ -70,7 +87,10 @@ class ComplaintModel {
       categoryName: map['categoryName'] ?? '',
       description: map['description'] ?? '',
       locationAddress: map['locationAddress'] ?? '',
-      imageUrl: map['imageUrl'] ?? '',
+      imageUrl: singleUrl.isNotEmpty
+          ? singleUrl
+          : (parsedUrls.isNotEmpty ? parsedUrls.first : ''),
+      imageUrls: parsedUrls,
       status: map['status'] ?? statusMenunggu,
       adminResponse: map['adminResponse'] ?? '',
       createdAt: (map['createdAt'] as Timestamp?)?.toDate(),
@@ -89,6 +109,7 @@ class ComplaintModel {
     String? description,
     String? locationAddress,
     String? imageUrl,
+    List<String>? imageUrls,
     String? status,
     String? adminResponse,
     DateTime? createdAt,
@@ -104,6 +125,7 @@ class ComplaintModel {
       description: description ?? this.description,
       locationAddress: locationAddress ?? this.locationAddress,
       imageUrl: imageUrl ?? this.imageUrl,
+      imageUrls: imageUrls ?? this.imageUrls,
       status: status ?? this.status,
       adminResponse: adminResponse ?? this.adminResponse,
       createdAt: createdAt ?? this.createdAt,
