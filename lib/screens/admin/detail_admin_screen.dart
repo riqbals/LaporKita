@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/constants/app_colors.dart';
+import '../../core/constants/app_enums.dart';
 import '../../models/complaint_model.dart';
 import '../../services/complaint_service.dart';
 import '../../widgets/complaint_photo_gallery.dart';
@@ -25,14 +26,17 @@ class _DetailAdminScreenState extends State<DetailAdminScreen> {
   bool _isSubmitting = false;
 
   List<String> get _allowedNextStatuses {
-    return switch (widget.complaint.status) {
-      ComplaintModel.statusMenunggu => const [
+    final normalized = widget.complaint.status.trim().toLowerCase();
+    if (normalized == 'menunggu' || normalized == 'menunggu verifikasi') {
+      return const [
         ComplaintModel.statusDiproses,
         ComplaintModel.statusDitolak,
-      ],
-      ComplaintModel.statusDiproses => const [ComplaintModel.statusSelesai],
-      _ => const [],
-    };
+      ];
+    }
+    if (normalized == 'diproses') {
+      return const [ComplaintModel.statusSelesai];
+    }
+    return const [];
   }
 
   @override
@@ -129,24 +133,69 @@ class _DetailAdminScreenState extends State<DetailAdminScreen> {
               StatusBadge(status: complaint.status),
             ],
           ),
-          const SizedBox(height: 6),
-          Text('Pelapor: ${complaint.userName}', style: textTheme.bodySmall),
           const SizedBox(height: 8),
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 13,
+                backgroundColor: AppColors.primarySoft,
+                child: complaint.userName.trim().isNotEmpty
+                    ? Text(
+                        complaint.userName.trim()[0].toUpperCase(),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.primaryDark,
+                        ),
+                      )
+                    : const Icon(
+                        Icons.person_outline,
+                        size: 15,
+                        color: AppColors.primaryDark,
+                      ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  complaint.userName.trim(),
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
           Align(
             alignment: Alignment.centerLeft,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
                 color: AppColors.primarySoft,
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: Text(
-                complaint.categoryName,
-                style: textTheme.bodySmall?.copyWith(
-                  color: AppColors.primaryDark,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 12,
-                ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    AppCategories.iconFor(
+                      categoryId: complaint.categoryId,
+                      categoryName: complaint.categoryName,
+                    ),
+                    size: 15,
+                    color: AppColors.primaryDark,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    complaint.categoryName,
+                    style: textTheme.bodySmall?.copyWith(
+                      color: AppColors.primaryDark,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
