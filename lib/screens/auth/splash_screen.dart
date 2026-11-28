@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/constants/app_colors.dart';
@@ -27,10 +28,15 @@ class _SplashScreenState extends State<SplashScreen> {
     await Future<void>.delayed(const Duration(milliseconds: 600));
     if (!mounted) return;
 
+    if (Firebase.apps.isEmpty) {
+      Navigator.pushReplacementNamed(context, AppRoutes.roleSelection);
+      return;
+    }
+
     try {
       final user = _authService.currentUser;
       if (user == null) {
-        Navigator.pushReplacementNamed(context, AppRoutes.login);
+        Navigator.pushReplacementNamed(context, AppRoutes.roleSelection);
         return;
       }
 
@@ -38,7 +44,7 @@ class _SplashScreenState extends State<SplashScreen> {
       if (!mounted) return;
 
       if (profile == null) {
-        Navigator.pushReplacementNamed(context, AppRoutes.login);
+        Navigator.pushReplacementNamed(context, AppRoutes.roleSelection);
         return;
       }
 
@@ -49,7 +55,7 @@ class _SplashScreenState extends State<SplashScreen> {
       Navigator.pushReplacementNamed(context, targetRoute);
     } catch (_) {
       if (!mounted) return;
-      Navigator.pushReplacementNamed(context, AppRoutes.login);
+      Navigator.pushReplacementNamed(context, AppRoutes.roleSelection);
     }
   }
 

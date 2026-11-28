@@ -49,7 +49,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (!mounted) return;
     Navigator.pushNamedAndRemoveUntil(
       context,
-      AppRoutes.login,
+      AppRoutes.roleSelection,
       (route) => false,
     );
   }
