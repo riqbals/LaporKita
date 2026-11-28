@@ -33,11 +33,11 @@ class LaporKitaApp extends StatelessWidget {
       title: 'LaporKita',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      initialRoute: AppRoutes.roleSelection,
+      initialRoute: AppRoutes.splash,
       onGenerateInitialRoutes: (_) => [
         MaterialPageRoute(
-          builder: (_) => const RoleSelectionScreen(),
-          settings: const RouteSettings(name: AppRoutes.roleSelection),
+          builder: (_) => const SplashScreen(),
+          settings: const RouteSettings(name: AppRoutes.splash),
         ),
       ],
       onGenerateRoute: (settings) {

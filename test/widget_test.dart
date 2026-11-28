@@ -12,9 +12,11 @@ import 'package:laporkita/widgets/app_logo.dart';
 
 void main() {
   testWidgets(
-    'RoleSelection routes to Warga (with register) and Admin (login only)',
+    'SplashScreen routes to RoleSelection, then Warga (with register) and Admin (login only)',
     (WidgetTester tester) async {
       await tester.pumpWidget(const LaporKitaApp());
+      await tester.pump(const Duration(milliseconds: 700));
+      await tester.pumpAndSettle();
 
       expect(find.byType(AppLogo), findsOneWidget);
       expect(find.text('Warga'), findsOneWidget);
