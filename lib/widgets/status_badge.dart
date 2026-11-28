@@ -1,36 +1,27 @@
 import 'package:flutter/material.dart';
 
 import '../core/constants/app_colors.dart';
-import '../models/complaint_model.dart';
 
 /// Badge warna status pengaduan sesuai palet warna di PRD Section 4B.
 class StatusBadge extends StatelessWidget {
-  const StatusBadge({
-    super.key,
-    required this.status,
-  });
+  const StatusBadge({super.key, required this.status});
 
   final String status;
 
   @override
   Widget build(BuildContext context) {
-    final (Color textColor, Color bgColor) = switch (status) {
-      ComplaintModel.statusMenunggu => (
-          AppColors.statusWaiting,
-          AppColors.statusWaitingSoft,
-        ),
-      ComplaintModel.statusDiproses => (
-          AppColors.statusInProgress,
-          AppColors.statusInProgressSoft,
-        ),
-      ComplaintModel.statusSelesai => (
-          AppColors.statusDone,
-          AppColors.statusDoneSoft,
-        ),
-      ComplaintModel.statusDitolak => (
-          AppColors.statusRejected,
-          AppColors.statusRejectedSoft,
-        ),
+    final normalized = status.trim().toLowerCase();
+    final (Color textColor, Color bgColor) = switch (normalized) {
+      'menunggu' || 'menunggu verifikasi' => (
+        AppColors.statusWaiting,
+        AppColors.statusWaitingSoft,
+      ),
+      'diproses' => (
+        AppColors.statusInProgress,
+        AppColors.statusInProgressSoft,
+      ),
+      'selesai' => (AppColors.statusDone, AppColors.statusDoneSoft),
+      'ditolak' => (AppColors.statusRejected, AppColors.statusRejectedSoft),
       _ => (AppColors.textSecondary, AppColors.divider),
     };
 

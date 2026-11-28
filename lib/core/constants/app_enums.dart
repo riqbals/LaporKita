@@ -68,4 +68,26 @@ abstract final class AppCategories {
       icon: Icons.more_horiz_outlined,
     ),
   ];
+
+  /// Mencari ikon kategori berdasarkan [categoryId] atau [categoryName] agar
+  /// konsisten dengan ikon pada Beranda User.
+  static IconData iconFor({
+    String categoryId = '',
+    String categoryName = '',
+  }) {
+    final normalizedId = categoryId.trim().toLowerCase();
+    final normalizedName =
+        categoryName.trim().toLowerCase().replaceAll(' dan ', ' & ');
+
+    for (final item in items) {
+      if (normalizedId.isNotEmpty && item.id == normalizedId) {
+        return item.icon;
+      }
+      if (normalizedName.isNotEmpty &&
+          item.title.toLowerCase() == normalizedName) {
+        return item.icon;
+      }
+    }
+    return Icons.category_outlined;
+  }
 }

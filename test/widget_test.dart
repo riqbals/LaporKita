@@ -88,10 +88,7 @@ void main() {
         find.text('Unggah maksimal 5 foto sebagai bukti pengaduan.'),
         findsOneWidget,
       );
-      expect(
-        find.text('Anda sudah menambahkan 0/5 foto'),
-        findsOneWidget,
-      );
+      expect(find.text('Anda sudah menambahkan 0/5 foto'), findsOneWidget);
 
       // Buka dropdown kategori & pastikan kategori dari Beranda tersedia
       await tester.tap(find.byType(DropdownButtonFormField<String>));
@@ -246,7 +243,7 @@ void main() {
         categoryName: 'Infrastruktur & Fasilitas Umum',
         description: 'Lubang besar membahayakan pengendara.',
         locationAddress: 'Jl. Merdeka No. 12, Bandung',
-        status: ComplaintModel.statusMenunggu,
+        status: 'Menunggu Verifikasi',
       );
 
       await tester.pumpWidget(
@@ -259,7 +256,8 @@ void main() {
 
       expect(find.text('Kelola Aduan'), findsOneWidget);
       expect(find.text('Foto Aduan'), findsOneWidget);
-      expect(find.text('Pelapor: Budi Santoso'), findsOneWidget);
+      expect(find.text('Budi Santoso'), findsOneWidget);
+      expect(find.byIcon(Icons.construction_outlined), findsOneWidget);
       expect(find.text('Jl. Merdeka No. 12, Bandung'), findsOneWidget);
       expect(find.text('Tindak Lanjut Petugas'), findsOneWidget);
       expect(find.text('Diproses'), findsOneWidget);
